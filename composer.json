@@ -1,0 +1,14 @@
+{
+  "type": "project",
+  "require": {
+    "slim/slim": "^4.8",
+    "slim/psr7": "^1.4",
+    "twig/twig": "^3.3"
+  },
+  "authors": [
+    {
+      "name": "Ichi"
+    }
+  ],
+  "minimum-stability": "stable"
+}
