@@ -30,4 +30,10 @@ class PostMapper
         return array_shift($result);
     }
 
+    public function getList(): ?array
+    {
+        $statement = $this->connection->prepare("SELECT * FROM post ORDER BY published_date DESC");
+        $statement->execute();
+        return $statement->fetchAll();
+    }
 }

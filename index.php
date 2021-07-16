@@ -25,8 +25,8 @@ $view = new \Twig\Environment($loader);
 
 $app = AppFactory::create();
 
-$app->get('/', function (Request $request, Response $response, $args) use ($view) {
-    $body = $view->render('index.twig');
+$app->get('/', function (Request $request, Response $response, $args) use ($view, $postMapper) {
+    $body = $view->render('index.twig', ['posts' => $postMapper->getList()]);
     $response->getBody()->write($body);
     return $response;
 });
