@@ -1,5 +1,7 @@
 <?php
 
+use Blog\LatestPosts;
+use Blog\PostMapper;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
@@ -22,8 +24,8 @@ $view = new \Twig\Environment($loader);
 
 $app = AppFactory::create();
 
-$app->get('/', function (Request $request, Response $response, $args) use ($view, $connection) {
-    $latestPosts = new \Blog\LatestPosts($connection);
+$app->get('/', function (Request $request, Response $response) use ($view, $connection) {
+    $latestPosts = new LatestPosts($connection);
     $posts = $latestPosts->get(3);
     array_walk($posts, fn(&$item) => $item['file_exists'] = file_exists(__DIR__ . '/' . $item['image_path']) && !empty($item['image_path']));
     $body = $view->render('index.twig', ['posts' => $posts]);
@@ -37,8 +39,22 @@ $app->get('/about', function (Request $request, Response $response, $args) use (
     return $response;
 });
 
+$app->get('/blog[/{page}]', function (Request $request, Response $response, $args) use ($view, $connection) {
+
+    $page = $args['page'] ?? 1;
+    $limit = 5;
+
+    $posts = new PostMapper($connection);
+    $posts = $posts->getList($page, $limit, 'DESC');
+    array_walk($posts, fn(&$item) => $item['file_exists'] = file_exists(__DIR__ . '/' . $item['image_path']) && !empty($item['image_path']));
+
+    $body = $view->render('blog.twig', ['posts' => $posts]);
+    $response->getBody()->write($body);
+    return $response;
+});
+
 $app->get('/{slug}', function (Request $request, Response $response, $args) use ($view, $connection) {
-    $postMapper = new \Blog\PostMapper($connection);
+    $postMapper = new PostMapper($connection);
     $post = $postMapper->getBySlug($args['slug']);
     if (empty($post)) {
         $body = $view->render('not-found.twig');

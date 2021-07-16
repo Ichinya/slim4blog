@@ -11,8 +11,15 @@
 <body>
 
 {% include 'sections/navigation.twig' %}
+<div class="container">
 {% block body %}{% endblock %}
+</div>
 
+<footer class="footer p-3 bg-light mt-3">
+    <div class="container">
+        <p class="text-muted">(C) {{ "now"|date('Y') }}</p>
+    </div>
+</footer>
 
 <script src="/js/bootstrap.bundle.min.js"/>
 </body>
