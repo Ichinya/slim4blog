@@ -16,8 +16,15 @@ $app->get('/', function (Request $request, Response $response, $args) use ($view
     $response->getBody()->write($body);
     return $response;
 });
+
 $app->get('/about', function (Request $request, Response $response, $args) use ($view) {
-    $body = $view->render('about.twig', ['name'=> 'sd']);
+    $body = $view->render('about.twig', ['name' => 'sd']);
+    $response->getBody()->write($body);
+    return $response;
+});
+
+$app->get('/{slug}', function (Request $request, Response $response, $args) use ($view) {
+    $body = $view->render('post.twig', $args);
     $response->getBody()->write($body);
     return $response;
 });
