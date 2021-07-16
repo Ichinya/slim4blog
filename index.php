@@ -6,6 +6,20 @@ use Slim\Factory\AppFactory;
 
 require __DIR__ . '/vendor/autoload.php';
 
+$config = include 'config/db.php';
+
+try {
+    $connection = new PDO($config['dsn'], $config['user'], $config['pass']);
+    $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $connection->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+} catch (PDOException $exception) {
+    echo 'Error подключения к БД ' . $exception->getMessage();
+    die();
+}
+
+$postMapper = new \Blog\PostMapper($connection);
+
+
 $loader = new \Twig\Loader\FilesystemLoader('template');
 $view = new \Twig\Environment($loader);
 
@@ -23,8 +37,13 @@ $app->get('/about', function (Request $request, Response $response, $args) use (
     return $response;
 });
 
-$app->get('/{slug}', function (Request $request, Response $response, $args) use ($view) {
-    $body = $view->render('post.twig', $args);
+$app->get('/{slug}', function (Request $request, Response $response, $args) use ($view, $postMapper) {
+    $post = $postMapper->getBySlug($args['slug']);
+    if (empty($post)) {
+        $body = $view->render('not-found.twig');
+    } else {
+        $body = $view->render('post.twig', compact('post'));
+    }
     $response->getBody()->write($body);
     return $response;
 });
