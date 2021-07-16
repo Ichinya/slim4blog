@@ -17,16 +17,16 @@ try {
     die();
 }
 
-$postMapper = new \Blog\PostMapper($connection);
-
-
 $loader = new \Twig\Loader\FilesystemLoader('template');
 $view = new \Twig\Environment($loader);
 
 $app = AppFactory::create();
 
-$app->get('/', function (Request $request, Response $response, $args) use ($view, $postMapper) {
-    $body = $view->render('index.twig', ['posts' => $postMapper->getList()]);
+$app->get('/', function (Request $request, Response $response, $args) use ($view, $connection) {
+    $latestPosts = new \Blog\LatestPosts($connection);
+    $posts = $latestPosts->get(3);
+    array_walk($posts, fn(&$item) => $item['file_exists'] = file_exists(__DIR__ . '/' . $item['image_path']) && !empty($item['image_path']));
+    $body = $view->render('index.twig', ['posts' => $posts]);
     $response->getBody()->write($body);
     return $response;
 });
@@ -37,11 +37,13 @@ $app->get('/about', function (Request $request, Response $response, $args) use (
     return $response;
 });
 
-$app->get('/{slug}', function (Request $request, Response $response, $args) use ($view, $postMapper) {
+$app->get('/{slug}', function (Request $request, Response $response, $args) use ($view, $connection) {
+    $postMapper = new \Blog\PostMapper($connection);
     $post = $postMapper->getBySlug($args['slug']);
     if (empty($post)) {
         $body = $view->render('not-found.twig');
     } else {
+        $post['file_exists'] = file_exists(__DIR__ . '/' . $post['image_path']) && !empty($post['image_path']);
         $body = $view->render('post.twig', compact('post'));
     }
     $response->getBody()->write($body);
