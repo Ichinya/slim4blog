@@ -44,14 +44,22 @@ $app->get('/about', function (Request $request, Response $response, $args) use (
 
 $app->get('/blog[/{page}]', function (Request $request, Response $response, $args) use ($view, $connection) {
 
-    $page = $args['page'] ?? 1;
+    $page = (int)($args['page'] ?? 1);
     $limit = 5;
 
-    $posts = new PostMapper($connection);
-    $posts = $posts->getList($page, $limit, 'DESC');
+    $postMapper = new PostMapper($connection);
+    $posts = $postMapper->getList($page, $limit, 'DESC');
     array_walk($posts, fn(&$item) => $item['file_exists'] = file_exists(__DIR__ . '/' . $item['image_path']) && !empty($item['image_path']));
 
-    $body = $view->render('blog.twig', ['posts' => $posts]);
+    $totalCount = $postMapper->getTotalCount();
+
+    $body = $view->render('blog.twig', [
+        'posts' => $posts,
+        'pagination' => [
+            'current' => $page,
+            'paging' => ceil($totalCount / $limit)
+        ]
+    ]);
     $response->getBody()->write($body);
     return $response;
 });
