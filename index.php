@@ -7,12 +7,14 @@ use Psr\Http\Message\{ResponseInterface as Response, ServerRequestInterface as R
 use Slim\Factory\AppFactory;
 use Twig\Environment;
 
-require __DIR__ . '/vendor/autoload.php';
+const ROOT_DIR = __DIR__;
+require ROOT_DIR . '/vendor/autoload.php';
+
 
 $builder = new ContainerBuilder();
 $builder->addDefinitions('config/di.php');
 
-(new DotEnv(__DIR__ . '/.env'))->load();
+(new DotEnv(ROOT_DIR . '/.env'))->load();
 
 try {
     $container = $builder->build();
@@ -42,14 +44,7 @@ try {
 $app->add(new TwigMiddleware($view));
 
 
-$app->get('/', function (Request $request, Response $response) use ($view, $connection) {
-    $latestPosts = new LatestPosts($connection);
-    $posts = $latestPosts->get(3);
-    array_walk($posts, fn(&$item) => $item['file_exists'] = file_exists(__DIR__ . '/' . $item['image_path']) && !empty($item['image_path']));
-    $body = $view->render('index.twig', ['posts' => $posts]);
-    $response->getBody()->write($body);
-    return $response;
-});
+$app->get('/', \Blog\Route\HomePage::class . ':execute');
 
 $app->get('/about', function (Request $request, Response $response, $args) use ($view) {
     $body = $view->render('about.twig', ['name' => 'Ichi']);
@@ -64,7 +59,7 @@ $app->get('/blog[/{page}]', function (Request $request, Response $response, $arg
 
     $postMapper = new PostMapper($connection);
     $posts = $postMapper->getList($page, $limit, 'DESC');
-    array_walk($posts, fn(&$item) => $item['file_exists'] = file_exists(__DIR__ . '/' . $item['image_path']) && !empty($item['image_path']));
+    array_walk($posts, fn(&$item) => $item['file_exists'] = file_exists(ROOT_DIR . '/' . $item['image_path']) && !empty($item['image_path']));
 
     $totalCount = $postMapper->getTotalCount();
 
@@ -85,7 +80,7 @@ $app->get('/{slug}', function (Request $request, Response $response, $args) use 
     if (empty($post)) {
         $body = $view->render('not-found.twig');
     } else {
-        $post['file_exists'] = file_exists(__DIR__ . '/' . $post['image_path']) && !empty($post['image_path']);
+        $post['file_exists'] = file_exists(ROOT_DIR . '/' . $post['image_path']) && !empty($post['image_path']);
         $body = $view->render('post.twig', compact('post'));
     }
     $response->getBody()->write($body);
