@@ -1,27 +1,18 @@
 <?php
 
-use Blog\PostMapper;
-use Blog\LatestPosts;
-use Blog\Slim\TwigMiddleware;
+use Blog\{Database, PostMapper, LatestPosts, Slim\TwigMiddleware};
+use DevCoder\DotEnv;
+use DI\{ContainerBuilder, DependencyException, NotFoundException};
+use Psr\Http\Message\{ResponseInterface as Response, ServerRequestInterface as Request};
 use Slim\Factory\AppFactory;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
+use Twig\Environment;
 
 require __DIR__ . '/vendor/autoload.php';
 
-$config = include 'config/db.php';
-
-try {
-    $connection = new PDO($config['dsn'], $config['user'], $config['pass']);
-    $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $connection->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch (PDOException $exception) {
-    echo 'Error подключения к БД ' . $exception->getMessage();
-    die();
-}
-
-$builder = new \DI\ContainerBuilder();
+$builder = new ContainerBuilder();
 $builder->addDefinitions('config/di.php');
+
+(new DotEnv(__DIR__ . '/.env'))->load();
 
 try {
     $container = $builder->build();
@@ -35,11 +26,19 @@ AppFactory::setContainer($container);
 $app = AppFactory::create();
 
 try {
-    $view = $container->get(\Twig\Environment::class);
-} catch (\DI\DependencyException | \DI\NotFoundException | Exception $e) {
+    $view = $container->get(Environment::class);
+} catch (DependencyException | NotFoundException | Exception $e) {
     echo 'Ошибка получения нужного контейнера ' . $e->getMessage();
     die();
 }
+
+try {
+    $connection = $container->get(Database::class)->getConnection();
+} catch (DependencyException | NotFoundException | Exception $e) {
+    echo 'Ошибка получения нужного контейнера ' . $e->getMessage();
+    die();
+}
+
 $app->add(new TwigMiddleware($view));
 
 
