@@ -1,12 +1,11 @@
 <?php
 
-
 namespace Blog\Route;
 
-use Blog\Database;
 use Blog\LatestPosts;
 use Twig\Environment;
 use Psr\Http\Message\{ResponseInterface as Response, ServerRequestInterface as Request};
+use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
 
 class HomePage
 {
@@ -19,6 +18,14 @@ class HomePage
         $this->view = $environment;
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     */
     public function execute(Request $request, Response $response): Response
     {
         $posts = $this->latestPosts->get(3);
