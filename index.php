@@ -20,10 +20,26 @@ try {
     die();
 }
 
-$loader = new \Twig\Loader\FilesystemLoader('template');
-$view = new \Twig\Environment($loader);
+$builder = new \DI\ContainerBuilder();
+$builder->addDefinitions('config/di.php');
+
+try {
+    $container = $builder->build();
+} catch (Exception $e) {
+    echo 'Ошибка создания контейнера ' . $e->getMessage();
+    die();
+}
+
+AppFactory::setContainer($container);
 
 $app = AppFactory::create();
+
+try {
+    $view = $container->get(\Twig\Environment::class);
+} catch (\DI\DependencyException | \DI\NotFoundException | Exception $e) {
+    echo 'Ошибка получения нужного контейнера ' . $e->getMessage();
+    die();
+}
 $app->add(new TwigMiddleware($view));
 
 
@@ -37,7 +53,7 @@ $app->get('/', function (Request $request, Response $response) use ($view, $conn
 });
 
 $app->get('/about', function (Request $request, Response $response, $args) use ($view) {
-    $body = $view->render('about.twig', ['name' => 'sd']);
+    $body = $view->render('about.twig', ['name' => 'Ichi']);
     $response->getBody()->write($body);
     return $response;
 });
