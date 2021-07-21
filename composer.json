@@ -6,7 +6,8 @@
     "twig/twig": "^3.3",
     "ext-pdo": "*",
     "php-di/php-di": "^6.3.4",
-    "devcoder-xyz/php-dotenv": "^1.1"
+    "devcoder-xyz/php-dotenv": "^1.1",
+    "ext-http": "*"
   },
   "autoload": {
     "psr-4": {
