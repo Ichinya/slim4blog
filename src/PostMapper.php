@@ -3,7 +3,6 @@
 namespace Blog;
 
 use Exception;
-use PDO;
 
 class PostMapper
 {

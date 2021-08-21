@@ -2,7 +2,6 @@
 
 namespace Blog\Route;
 
-use Blog\LatestPosts;
 use Blog\PostMapper;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

@@ -1,9 +1,8 @@
 <?php
 
 use Blog\Route\{AboutPage, BlogPage, HomePage, PostPage};
-use Blog\Slim\TwigMiddleware;
 use DevCoder\DotEnv;
-use DI\{ContainerBuilder, DependencyException, NotFoundException};
+use DI\ContainerBuilder;
 use Slim\Factory\AppFactory;
 
 const ROOT_DIR = __DIR__;
@@ -24,12 +23,6 @@ try {
 AppFactory::setContainer($container);
 
 $app = AppFactory::create();
-
-try {
-    $app->add($container->get(TwigMiddleware::class));
-} catch (DependencyException | NotFoundException | Exception $e) {
-    echo 'Ошибка получения нужного контейнера ' . $e->getMessage();
-}
 
 $app->get('/', HomePage::class . ':execute');
 
