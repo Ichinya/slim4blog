@@ -2,9 +2,7 @@
 
 namespace Blog;
 
-use InvalidArgumentException;
 use PDO;
-use PDOException;
 
 class Database
 {
@@ -16,13 +14,7 @@ class Database
      */
     public function __construct(PDO $connection)
     {
-        try {
-            $this->connection = $connection;
-            $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $this->connection->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-        } catch (PDOException $exception) {
-            throw new InvalidArgumentException($exception->getMessage());
-        }
+        $this->connection = $connection;
     }
 
     public function getConnection(): PDO
